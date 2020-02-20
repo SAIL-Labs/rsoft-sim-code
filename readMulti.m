@@ -1,17 +1,31 @@
 %function readMulti(scanset,fileprefix, keepAllResults, showPlots)
 set(0,'DefaultFigureWindowStyle','docked')
+clc;clear
 %%% sync from me to silo - rsync -av /Users/chrisbetters/postdoc-other/rsoft/sweep cbetters@gateway.physics.usyd.edu.au:/import/silo4/snert/FMF_PL_rsoft/
 %%% sync from silo to me - rsync -av cbetters@gateway.physics.usyd.edu.au:/import/silo4/snert/FMF_PL_rsoft/sweep /Users/chrisbetters/postdoc-other/rsoft/
 
 %datapath = "/Volumes/silo4/snert/FMF_PL_rsoft/sweep/2_reduced_centre_core/"
-datapath = "/Users/chrisbetters/postdoc-other/rsoft/sweep/4_random_set/"
+%datapath = "/Users/chrisbetters/postdoc-other/rsoft/sweep/4_random_set/"
+%datapath = "";
+datapath = "S:\sweep\10_atmos_hci\"
 
-scanset="randset_"
+scanset="hcipysim_"
 fileprefix="zernikePSFs"
 keepAllResults=false
 showPlots=true
 
-load([datapath + scanset + "_metadata.mat"])
+matfile=load([datapath + scanset + "_metadata.mat"]);
+%matfile=load('PSFOut_hcipy_inputfield.mat');
+
+%%
+coeffsList=matfile.coeffsList';
+allOutfilenames=matfile.allOutfilenames;
+allData=matfile.allData;
+% for j=1:size(matfile.allData,1)
+%     for i=1:size(matfile.allData,2)
+%         allData{j,i}=permute(matfile.allData(j,i,:,:),[3 4 1 2]);
+%     end
+% end
 %% 
 % try
 %     load('fldin.mat','InFLDampl','InFLDintens','InFLDphase')
@@ -23,7 +37,7 @@ load([datapath + scanset + "_metadata.mat"])
 %     save('fldin.mat','InFLDampl','InFLDintens','InFLDphase')
 % end
 % catch
-    for i=1:size(coeffsList,1)
+    for i=1:size(allData,1)
             In_psf_ampl(:,:,i) = allData{i,1};
             In_psf_phase(:,:,i) = allData{i,2};
             In_pupil_phase(:,:,i) = allData{i,3};
@@ -32,39 +46,68 @@ load([datapath + scanset + "_metadata.mat"])
 % end
 
 %%
+cplot = @(r,x0,y0) plot(x0 + r*cos(linspace(0,2*pi)),y0 + r*sin(linspace(0,2*pi)),'-w');
 
-for k=1:size(allOutfilenames,1)
+v = VideoWriter([scanset+'summary'],'MPEG-4');
+v.FrameRate=2;
+v.Quality=100;
+open(v);
+figure(1)
+for k=1:size(In_psf_ampl,3)
     
-    inputFilename = allOutfilenames(k,:);
+    inputFilename = strtrim(allOutfilenames(k,:));
     coeffs = coeffsList(k,:);
     [FLDampl, FLDintens, FLDphase, MONdata, MONposn, XZampl, YZampl] = readall(inputFilename,datapath);
     
-    figure(k+3)
+    %figure(k);clf
     subplot(3,3,1)
-    imagesc((In_psf_ampl(:,:,k).^2))
+    imagesc([-128 128], [-128 128], (In_psf_ampl(:,:,k).^2))
+    hold all
+    cplot(55/2,0,0)
+    hold off
+    title('PSF Intensity')
     
     subplot(3,3,2)
-    imagesc(In_psf_phase(:,:,k))
+    imagesc([-128 128], [-128 128], In_psf_phase(:,:,k))
+    title('PSF Phase')
     
     subplot(3,3,3)
-    imagesc(In_pupil_phase(:,:,k))
+    imagesc(rescale(In_pupil_phase(:,:,k)))
+    axis off
+    title(['Atmosphere Phase Screen t=' num2str(coeffs)])
     
     subplot(3,3,4)
-    imagesc((FLDintens))
+    imagesc([-250 250], [-250 250], log10(FLDintens))
+    xlabel('Simulation Width (um)')
+    ylabel('Simulation Height (um)')
+    title('PL Output (log10)')
     
     subplot(3,3,5)
-    imagesc(XZampl(:,1:2:end))
+    imagesc([0 60], [-250 250], XZampl(:,1:2:end))
+    xlabel('Taper Position (mm)')
+    ylabel('Simulation Height (um)')
+    title('XZ Cut')
     
     subplot(3,3,6)
-    imagesc(YZampl(:,1:2:end))
+    imagesc([0 60], [-250 250], YZampl(:,1:2:end))
+    xlabel('Taper Position (mm)')
+    ylabel('Simulation Width (um)')
+    title('YZ Cut')
     
     subplot(3,3,[7:9])
     plot(MONposn,MONdata)
+    title('Core Power Moniters')
+    xlabel('Taper Position (mm)')
+    ylabel('Power in Core')
     
     MONdata(end,1:7)
     sum(MONdata(end,1:7))
     %pause
+    %%
+    frame = getframe(gcf);
+    writeVideo(v,frame);
 end
+close(v);
 
 %% Cubes
 for k=1:size(allOutfilenames,1)
