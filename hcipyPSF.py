@@ -5,10 +5,6 @@ from hcipy import *
 from make_rsoft_fld_batch import RSOFTPSF
 
 
-class structtype:
-    pass
-
-
 class hcipyPSF(RSOFTPSF):
     def __init__(
         self,
@@ -65,7 +61,7 @@ class hcipyPSF(RSOFTPSF):
 
         self.psf = np.asarray(img.intensity.shaped)
         self.psf = self.psf / self.psf.max()
-        self.wf = structtype()
+
         self.wf.amplitude = self.complex_psf.real
         self.wf.phase = np.angle(self.complex_psf)
 

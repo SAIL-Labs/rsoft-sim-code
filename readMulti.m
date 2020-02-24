@@ -7,7 +7,7 @@ clc;clear
 %datapath = "/Volumes/silo4/snert/FMF_PL_rsoft/sweep/2_reduced_centre_core/"
 %datapath = "/Users/chrisbetters/postdoc-other/rsoft/sweep/4_random_set/"
 %datapath = "";
-datapath = "S:\sweep\10_atmos_hci\"
+datapath = "S:\sweep\11_atmos_hci_airwrapmodel\"
 
 scanset="hcipysim_"
 fileprefix="zernikePSFs"
@@ -57,7 +57,7 @@ for k=1:size(In_psf_ampl,3)
     
     inputFilename = strtrim(allOutfilenames(k,:));
     coeffs = coeffsList(k,:);
-    [FLDampl, FLDintens, FLDphase, MONdata, MONposn, XZampl, YZampl] = readall(inputFilename,datapath);
+    [FLDampl, FLDintens, FLDphase, MONdata(:,:,k), MONposn, XZampl, YZampl] = readall(inputFilename,datapath);
     
     %figure(k);clf
     subplot(3,3,1)
@@ -95,13 +95,13 @@ for k=1:size(In_psf_ampl,3)
     title('YZ Cut')
     
     subplot(3,3,[7:9])
-    plot(MONposn,MONdata)
+    %plot(MONposn,MONdata)
     title('Core Power Moniters')
     xlabel('Taper Position (mm)')
     ylabel('Power in Core')
     
-    MONdata(end,1:7)
-    sum(MONdata(end,1:7))
+    MONdata(end,1:7,k)
+    sum(MONdata(end,1:7,k))
     %pause
     %%
     frame = getframe(gcf);

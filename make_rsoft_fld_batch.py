@@ -9,9 +9,13 @@ from abc import ABCMeta, abstractmethod
 import errno
 
 
+class structtype:
+    pass
+
+
 class RSOFTPSF(metaclass=ABCMeta):
     psf = None
-    wf = None
+    wf = structtype()
 
     osys_obj = None
     pupil_wf = None
