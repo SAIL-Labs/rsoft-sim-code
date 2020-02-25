@@ -1,12 +1,13 @@
-import os
-import numpy as np
-import logging
-import scipy.io as sio
-import warnings
-import matplotlib.pyplot as plt
-import matplotlib.cbook
-from abc import ABCMeta, abstractmethod
 import errno
+import logging
+import os
+import warnings
+from abc import ABCMeta, abstractmethod
+
+import matplotlib.cbook
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.io as sio
 
 
 class structtype:

@@ -1,6 +1,7 @@
 #%%
-from hcipyPSF import hcipyPSF
 import numpy as np
+
+from hcipyPSF import hcipyPSF
 
 hci = hcipyPSF(radius=0.3)
 makePSFInputDict = {"coeffs": 0}
